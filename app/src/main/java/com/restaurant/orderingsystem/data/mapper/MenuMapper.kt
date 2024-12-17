@@ -1,6 +1,7 @@
 package com.restaurant.orderingsystem.data.mapper
 
 import com.restaurant.orderingsystem.data.dto.MenuItemDto
+import com.restaurant.orderingsystem.data.dto.CustomizationOptionDto
 import com.restaurant.orderingsystem.domain.model.MenuItem
 import com.restaurant.orderingsystem.domain.model.CustomizationOption
 
@@ -14,7 +15,14 @@ fun MenuItemDto.toDomain(): MenuItem {
         imageUrl = imageUrl,
         allergens = allergens,
         isAvailable = isAvailable,
-        customizationOptions = customizationOptions.map { it.toDomain() }
+        customizationOptions = customizationOptions.map { option ->
+            CustomizationOption(
+                id = option.id,
+                name = option.name,
+                options = option.options,
+                maxSelections = option.maxSelections
+            )
+        }
     )
 }
 
@@ -28,24 +36,13 @@ fun MenuItem.toDto(): MenuItemDto {
         imageUrl = imageUrl,
         allergens = allergens,
         isAvailable = isAvailable,
-        customizationOptions = customizationOptions.map { it.toDto() }
-    )
-}
-
-private fun MenuItemDto.CustomizationOptionDto.toDomain(): CustomizationOption {
-    return CustomizationOption(
-        id = id,
-        name = name,
-        options = options,
-        maxSelections = maxSelections
-    )
-}
-
-private fun CustomizationOption.toDto(): MenuItemDto.CustomizationOptionDto {
-    return MenuItemDto.CustomizationOptionDto(
-        id = id,
-        name = name,
-        options = options,
-        maxSelections = maxSelections
+        customizationOptions = customizationOptions.map { option ->
+            CustomizationOptionDto(
+                id = option.id,
+                name = option.name,
+                options = option.options,
+                maxSelections = option.maxSelections
+            )
+        }
     )
 }

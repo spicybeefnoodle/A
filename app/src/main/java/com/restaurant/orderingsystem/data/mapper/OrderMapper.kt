@@ -1,6 +1,7 @@
 package com.restaurant.orderingsystem.data.mapper
 
 import com.restaurant.orderingsystem.data.dto.OrderDto
+import com.restaurant.orderingsystem.data.dto.OrderItemDto
 import com.restaurant.orderingsystem.domain.model.MenuItem
 import com.restaurant.orderingsystem.domain.model.Order
 import com.restaurant.orderingsystem.domain.model.OrderItem
@@ -10,7 +11,15 @@ suspend fun OrderDto.toDomain(getMenuItem: suspend (String) -> MenuItem?): Order
     return Order(
         id = id,
         tableId = tableId,
-        items = items.mapNotNull { it.toDomain(getMenuItem) },
+        items = items.mapNotNull { item ->
+            val menuItem = getMenuItem(item.menuItemId) ?: return@mapNotNull null
+            OrderItem(
+                menuItem = menuItem,
+                quantity = item.quantity,
+                customizations = item.customizations,
+                specialInstructions = item.specialInstructions
+            )
+        },
         status = OrderStatus.valueOf(status),
         timestamp = timestamp,
         specialInstructions = specialInstructions,
@@ -22,29 +31,17 @@ fun Order.toDto(): OrderDto {
     return OrderDto(
         id = id,
         tableId = tableId,
-        items = items.map { it.toDto() },
+        items = items.map { item ->
+            OrderItemDto(
+                menuItemId = item.menuItem.id,
+                quantity = item.quantity,
+                customizations = item.customizations,
+                specialInstructions = item.specialInstructions
+            )
+        },
         status = status.name,
         timestamp = timestamp,
         specialInstructions = specialInstructions,
         totalAmount = totalAmount
-    )
-}
-
-private suspend fun OrderDto.OrderItemDto.toDomain(getMenuItem: suspend (String) -> MenuItem?): OrderItem? {
-    val menuItem = getMenuItem(menuItemId) ?: return null
-    return OrderItem(
-        menuItem = menuItem,
-        quantity = quantity,
-        customizations = customizations,
-        specialInstructions = specialInstructions
-    )
-}
-
-private fun OrderItem.toDto(): OrderDto.OrderItemDto {
-    return OrderDto.OrderItemDto(
-        menuItemId = menuItem.id,
-        quantity = quantity,
-        customizations = customizations,
-        specialInstructions = specialInstructions
     )
 }
